@@ -57,13 +57,5 @@
     "category": "Utility",
     "shortDescription": "Privacy-first AI desktop assistant"
   },
-  "plugins": {
-    "updater": {
-      "pubkey": "",
-      "endpoints": ["https://updates.sakongly.app/{{target}}/{{current_version}}"]
-    },
-    "autostart": {
-      "args": false
-    }
-  }
+  "plugins": {}
 }
