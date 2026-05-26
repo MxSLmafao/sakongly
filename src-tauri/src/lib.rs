@@ -59,6 +59,9 @@ pub fn run() {
                         y: 54,
                     }))?;
                 }
+                // Ensure the window is actually mapped — on some XWayland compositors
+                // the window stays invisible until explicitly shown.
+                win.show()?;
             }
             Ok(())
         })

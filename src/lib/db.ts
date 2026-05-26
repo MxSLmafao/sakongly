@@ -95,6 +95,11 @@ export const messageDb = {
     const d = await db();
     await d.execute("UPDATE messages SET content = ? WHERE id = ?", [content, id]);
   },
+
+  async delete(id: string): Promise<void> {
+    const d = await db();
+    await d.execute("DELETE FROM messages WHERE id = ?", [id]);
+  },
 };
 
 export const systemPromptDb = {

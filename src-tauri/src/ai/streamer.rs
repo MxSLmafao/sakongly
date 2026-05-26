@@ -3,6 +3,7 @@ use crate::commands::provider::StreamRequest;
 use futures_util::StreamExt;
 use reqwest::Client;
 use serde::Serialize;
+use std::time::Duration;
 use tauri::{AppHandle, Emitter};
 use tokio::sync::oneshot::Receiver;
 
@@ -42,7 +43,11 @@ async fn do_stream(
     let (headers, body) =
         super::template::substitute_parsed(&parsed.headers, &parsed.body, &vars);
 
-    let client = Client::new();
+    let client = Client::builder()
+        .connect_timeout(Duration::from_secs(5))
+        .build()
+        .map_err(|e| e.to_string())?;
+
     let mut builder = match parsed.method.as_str() {
         "GET" => client.get(&parsed.url),
         "PUT" => client.put(&parsed.url),
@@ -57,7 +62,21 @@ async fn do_stream(
         builder = builder.body(body_str);
     }
 
-    let response = builder.send().await.map_err(|e| e.to_string())?;
+    // Race the connect against the cancel signal so the user can abort
+    // before we even get a response (e.g. when localhost is unreachable).
+    let response = tokio::select! {
+        _ = &mut cancel_rx => {
+            emit(&app, &req.request_id, StreamEvent::Done);
+            return Ok(());
+        }
+        res = builder.send() => match res {
+            Err(e) => {
+                emit(&app, &req.request_id, StreamEvent::Error { data: e.to_string() });
+                return Ok(());
+            }
+            Ok(r) => r,
+        }
+    };
 
     if !response.status().is_success() {
         let status = response.status().as_u16();

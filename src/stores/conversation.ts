@@ -9,6 +9,7 @@ interface ConversationState {
   attachments: Attachment[];
   pendingRequestId: string | null;
   isStreaming: boolean;
+  lastError: string | null;
 
   setActiveConversation: (c: Conversation | null) => void;
   setMessages: (msgs: Message[]) => void;
@@ -21,6 +22,8 @@ interface ConversationState {
   clearAttachments: () => void;
   setPendingRequestId: (id: string | null) => void;
   setIsStreaming: (v: boolean) => void;
+  setLastError: (err: string | null) => void;
+  removeMessage: (id: string) => void;
 }
 
 export const useConversation = create<ConversationState>()((set) => ({
@@ -31,6 +34,7 @@ export const useConversation = create<ConversationState>()((set) => ({
   attachments: [],
   pendingRequestId: null,
   isStreaming: false,
+  lastError: null,
 
   setActiveConversation: (c) => set({ activeConversation: c, messages: [] }),
   setMessages: (messages) => set({ messages }),
@@ -60,4 +64,7 @@ export const useConversation = create<ConversationState>()((set) => ({
   clearAttachments: () => set({ attachments: [] }),
   setPendingRequestId: (id) => set({ pendingRequestId: id }),
   setIsStreaming: (isStreaming) => set({ isStreaming }),
+  setLastError: (lastError) => set({ lastError }),
+  removeMessage: (id) =>
+    set((s) => ({ messages: s.messages.filter((m) => m.id !== id) })),
 }));

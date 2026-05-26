@@ -12,7 +12,7 @@ import { captureProviderConfigured } from "@/lib/posthog";
 import type { Provider } from "@/lib/providers/types";
 
 export function ProvidersSettings() {
-  const { providers, selectedProviderId, selectProvider, addProvider, updateProvider, removeProvider } = useConfig();
+  const { providers, selectedProviderId, selectProvider, addProvider, updateProvider, removeProvider, setHasCompletedSetup } = useConfig();
   const [editing, setEditing] = useState<Provider | null>(null);
   const [validation, setValidation] = useState<{ valid: boolean; error?: string; method?: string; url?: string } | null>(null);
 
@@ -30,6 +30,7 @@ export function ProvidersSettings() {
   function saveEditing() {
     if (!editing) return;
     updateProvider(editing.id, editing);
+    setHasCompletedSetup(true);
     setEditing(null);
     captureProviderConfigured(editing.name);
   }

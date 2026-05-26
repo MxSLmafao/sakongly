@@ -28,6 +28,7 @@ interface ConfigState {
   quickActions: { id: string; label: string; prompt: string }[];
   responsePrefs: ResponsePrefs;
   posthogOptIn: boolean;
+  hasCompletedSetup: boolean;
 
   setTheme: (t: Theme) => void;
   setTransparency: (v: number) => void;
@@ -41,6 +42,7 @@ interface ConfigState {
   removeQuickAction: (id: string) => void;
   setResponsePrefs: (r: Partial<ResponsePrefs>) => void;
   setPosthogOptIn: (v: boolean) => void;
+  setHasCompletedSetup: (v: boolean) => void;
 }
 
 const defaultProviders: Provider[] = PROVIDER_PRESETS.map((p) => ({
@@ -65,6 +67,7 @@ export const useConfig = create<ConfigState>()(
       quickActions: [],
       responsePrefs: { language: "English", max_length: "medium" },
       posthogOptIn: false,
+      hasCompletedSetup: false,
 
       setTheme: (theme) => set({ theme }),
       setTransparency: (transparency) => set({ transparency }),
@@ -96,6 +99,7 @@ export const useConfig = create<ConfigState>()(
       setResponsePrefs: (r) =>
         set((s) => ({ responsePrefs: { ...s.responsePrefs, ...r } })),
       setPosthogOptIn: (posthogOptIn) => set({ posthogOptIn }),
+      setHasCompletedSetup: (hasCompletedSetup) => set({ hasCompletedSetup }),
     }),
     {
       name: "sakongly.config",

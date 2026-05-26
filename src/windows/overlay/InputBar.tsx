@@ -5,8 +5,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useStreamingChat } from "@/hooks/useStreamingChat";
 import { useConversation } from "@/stores/conversation";
 import { useConfig } from "@/stores/config";
+import { useProviderHealth, type HealthStatus } from "@/hooks/useProviderHealth";
 import { ipc } from "@/lib/ipc";
 import { open } from "@tauri-apps/plugin-dialog";
+import { cn } from "@/lib/utils";
 
 interface Props {
   expanded: boolean;
@@ -23,6 +25,7 @@ export function InputBar({ expanded, onExpand, onCollapse }: Props) {
   const selectedProviderId = useConfig((s) => s.selectedProviderId);
   const providers = useConfig((s) => s.providers);
   const selectedProvider = providers.find((p) => p.id === selectedProviderId);
+  const healthStatus = useProviderHealth();
 
   async function handleSubmit() {
     if (!text.trim() && attachments.length === 0) return;
@@ -79,11 +82,18 @@ export function InputBar({ expanded, onExpand, onCollapse }: Props) {
         aria-label={expanded ? "Collapse" : "Expand"}
       />
 
-      {/* Provider badge */}
+      {/* Provider health badge */}
       {selectedProvider && (
-        <span className="text-[10px] text-muted-foreground truncate max-w-[64px] shrink-0">
-          {selectedProvider.name.split(" ")[0]}
-        </span>
+        <button
+          onClick={() => ipc.openDashboard().catch(() => {})}
+          className="flex items-center gap-1 shrink-0 max-w-[72px] hover:opacity-70 transition-opacity"
+          title={`${selectedProvider.name} — ${healthStatus}`}
+        >
+          <HealthDot status={healthStatus} />
+          <span className="text-[10px] text-muted-foreground truncate">
+            {selectedProvider.name.split(" ")[0]}
+          </span>
+        </button>
       )}
 
       {/* Input */}
@@ -97,7 +107,7 @@ export function InputBar({ expanded, onExpand, onCollapse }: Props) {
         }}
         onFocus={onExpand}
         onKeyDown={handleKeyDown}
-        placeholder="Ask anything…"
+        placeholder={selectedProvider ? "Ask anything…" : "Open Settings to configure a provider"}
         rows={1}
         className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none leading-tight py-1"
         style={{ height: 28, maxHeight: 28, overflow: "hidden" }}
@@ -160,5 +170,19 @@ export function InputBar({ expanded, onExpand, onCollapse }: Props) {
         )}
       </div>
     </div>
+  );
+}
+
+function HealthDot({ status }: { status: HealthStatus }) {
+  return (
+    <span
+      className={cn(
+        "w-1.5 h-1.5 rounded-full shrink-0",
+        status === "ok" && "bg-green-500",
+        status === "fail" && "bg-red-500",
+        status === "checking" && "bg-amber-400 animate-pulse",
+        status === "unknown" && "bg-muted-foreground/40"
+      )}
+    />
   );
 }
