@@ -5,7 +5,6 @@ pub async fn capture_fullscreen_portal() -> Result<CaptureResult, String> {
     #[cfg(target_os = "linux")]
     {
         use ashpd::desktop::screenshot::Screenshot;
-        use ashpd::WindowIdentifier;
 
         let response = Screenshot::request()
             .interactive(false)

@@ -10,6 +10,7 @@ pub struct MonitorScale {
     pub scale_factor: f32,
 }
 
+#[allow(dead_code)]
 pub fn list_monitors() -> Vec<MonitorScale> {
     Monitor::all()
         .unwrap_or_default()

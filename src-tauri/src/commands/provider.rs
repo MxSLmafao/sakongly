@@ -44,6 +44,7 @@ pub struct StreamRequest {
     pub text: String,
     pub image_data_url: Option<String>,
     pub response_path: String,
+    #[allow(dead_code)]
     pub streaming: bool,
 }
 

@@ -16,7 +16,7 @@
     "core:window:allow-set-skip-taskbar",
     "core:window:allow-primary-monitor",
     "core:window:allow-available-monitors",
-    "core:webviewwindow:allow-new",
+    "core:webview:allow-create-webview-window",
     "core:event:allow-listen",
     "core:event:allow-emit",
     "global-shortcut:allow-register",
@@ -43,7 +43,9 @@
     "updater:allow-install",
     "clipboard-manager:allow-write-text",
     "clipboard-manager:allow-read-text",
-    "http:allow-send",
-    "http:allow-fetch"
+    "http:allow-fetch",
+    "http:allow-fetch-send",
+    "http:allow-fetch-read-body",
+    "http:allow-fetch-cancel"
   ]
 }

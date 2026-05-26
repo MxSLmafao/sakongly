@@ -39,7 +39,7 @@ pub async fn start_region_capture(
     }
 }
 
-/// Encode an on-disk image to a base64 data-URL.
+#[allow(dead_code)]
 pub fn image_to_data_url(path: &std::path::Path) -> Result<String, String> {
     let bytes = std::fs::read(path).map_err(|e| e.to_string())?;
     let mime = if path.extension().and_then(|e| e.to_str()) == Some("png") {
