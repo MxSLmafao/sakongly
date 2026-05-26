@@ -23,9 +23,6 @@
         "transparent": true,
         "alwaysOnTop": true,
         "skipTaskbar": true,
-        "center": false,
-        "x": 0,
-        "y": 54,
         "shadow": false,
         "url": "index.html"
       }
