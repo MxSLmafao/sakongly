@@ -2,57 +2,46 @@
 
 ## Current State
 
-The UX-fix branch is **complete but uncommitted**. All changes compile and `tsc --noEmit` is clean. The previous tag is `2551fc1` (fix: force XWayland mode).
+**Clean.** Commit `b1bf4b4` is pushed to `origin/master` on https://github.com/MxSLmafao/sakongly. Working tree is empty. `tsc --noEmit` and `cargo build` both pass.
 
-## What Was Just Changed (unstaged)
+## What Was Shipped in `b1bf4b4`
 
 | File | Change |
 |------|--------|
-| `src-tauri/src/ai/streamer.rs` | Added `connect_timeout(5s)` to reqwest client; wrapped `builder.send()` in `tokio::select!` with `cancel_rx` so cancel works during connect phase; connection errors now emit `StreamEvent::Error` instead of hanging |
-| `src-tauri/src/lib.rs` | Added `win.show()` after `set_position()` to force window mapping on XWayland |
-| `src/stores/config.ts` | Added `hasCompletedSetup: bool` (persisted to localStorage); `setHasCompletedSetup()` action |
-| `src/stores/conversation.ts` | Added `lastError: string\|null`, `setLastError()`, `removeMessage(id)` |
-| `src/lib/db.ts` | Added `messageDb.delete(id)` |
-| `src/App.tsx` | First-run gate: if `!hasCompletedSetup`, calls `ipc.openDashboard()` once at mount |
-| `src/hooks/useStreamingChat.ts` | Errors no longer write into chat history; instead: placeholder assistant message deleted from DB+store, `lastError` set. Added `retry()` (re-submits `lastSubmitRef`). Added try-catch around `ipc.aiStream()` |
-| `src/windows/dashboard/Settings/Providers.tsx` | `saveEditing()` now calls `setHasCompletedSetup(true)` |
-| `src/windows/overlay/Overlay.tsx` | `bg-background/95`, solid border, `ring-1 ring-primary/20`, left accent strip, `<ErrorBanner>` mounted above `<ChatPanel>` when `lastError != null` |
-| `src/windows/overlay/InputBar.tsx` | Provider badge replaced with health dot + name; placeholder text updated when no provider configured |
-| `src/hooks/useProviderHealth.ts` | **New.** Polls localhost providers via `fetch HEAD` every 30s with 2s timeout; skips remote hosts; returns `"ok"\|"fail"\|"unknown"\|"checking"` |
-| `src/windows/overlay/ErrorBanner.tsx` | **New.** Inline red banner with Open Settings, Retry, Dismiss buttons |
+| `src-tauri/src/ai/streamer.rs` | `connect_timeout(5s)`; `builder.send()` wrapped in `tokio::select!` with `cancel_rx` so cancel works during connect; connection errors emit `StreamEvent::Error` instead of hanging |
+| `src-tauri/src/lib.rs` | `win.show()` after `set_position()` forces window mapping on XWayland |
+| `src/stores/config.ts` | `hasCompletedSetup: bool` (localStorage-persisted); `setHasCompletedSetup()` action |
+| `src/stores/conversation.ts` | `lastError: string\|null`, `setLastError()`, `removeMessage(id)` |
+| `src/lib/db.ts` | `messageDb.delete(id)` |
+| `src/App.tsx` | First-run gate: `!hasCompletedSetup` → `ipc.openDashboard()` once at mount |
+| `src/hooks/useStreamingChat.ts` | Errors deleted from DB+store (not written into chat); `lastError` set; `retry()` added; try-catch around `ipc.aiStream()` |
+| `src/windows/dashboard/Settings/Providers.tsx` | `saveEditing()` calls `setHasCompletedSetup(true)` |
+| `src/windows/overlay/Overlay.tsx` | `bg-background/95`, solid border, `ring-1 ring-primary/20`, left accent strip, `<ErrorBanner>` above `<ChatPanel>` |
+| `src/windows/overlay/InputBar.tsx` | Provider badge → health dot + name; updated placeholder when no provider |
+| `src/hooks/useProviderHealth.ts` | **New.** Polls localhost via `fetch HEAD` every 30s, 2s timeout; skips remote hosts |
+| `src/windows/overlay/ErrorBanner.tsx` | **New.** Inline error banner with Open Settings, Retry, Dismiss |
 
-## Immediate Next Commands
+## Start Here
 
 ```bash
 cd /home/user/sakongly
+git pull  # ensure you're at b1bf4b4
 
-# 1. Verify everything still compiles
+# Verify builds
 npx tsc --noEmit
 cd src-tauri && cargo build && cd ..
 
-# 2. Commit
-git add -A
-git commit -m "fix: graceful provider failures, first-run flow, visible overlay
-
-- connect_timeout(5s) + cancellable connect in streamer.rs stops the hang
-  when localhost is unreachable
-- First-run auto-opens dashboard until user saves a provider
-- ErrorBanner replaces error-in-chat for all streaming failures
-- Provider health dot (green/red/amber/grey) in InputBar
-- Stronger overlay visuals: opaque bg, solid border, accent strip
-- win.show() after positioning ensures overlay appears on XWayland"
-
-# 3. Smoke test (needs Ollama NOT running to test the error path)
+# Smoke test — Ollama must NOT be running to test the error path
 npm run tauri dev
 ```
 
-**Manual checks after `tauri dev`:**
+**Smoke check list:**
 1. Overlay visible top-center with left accent strip and solid border
-2. No Ollama running → type message → within 5s red ErrorBanner appears (not frozen)
-3. ErrorBanner Retry button re-submits; Dismiss clears it
-4. First-run: delete `~/.local/share/sakongly/` and clear `localStorage` → dashboard auto-opens to Providers tab
-5. After saving a provider → restart → dashboard does NOT auto-open
-6. Provider dot: start `ollama serve` → dot turns green within 30s
+2. Ollama down → submit message → within 5s red ErrorBanner appears (no hang)
+3. ErrorBanner Retry re-submits; Dismiss clears it; Open Settings opens dashboard
+4. Delete `~/.local/share/sakongly/` and clear localStorage → restart → dashboard auto-opens to Providers
+5. Save a provider → restart → dashboard does NOT auto-open
+6. `ollama serve` → provider dot turns green within 30s
 
 ## Remaining Work (v1 scope)
 
